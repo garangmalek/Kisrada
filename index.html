@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Search and discover over 1,000,000 recipes with Kisrada" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+            href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap"
+            rel="stylesheet"
+    />
+    <link rel="icon" href="src/img/favicon.png" type="image/png" />
+    <link rel="stnode_modules
+dist
+.parcel-cache
+.DS_Store
+ylesheet" href="src/sass/_main.scss" />
+    <script type="module" src="src/js/controller.js"></script>
+    <title>Kisrada - Search Over 1,000,000 Recipes</title>
+</head>
+
+<body>
+<div class="container">
+    <header class="header">
+        <img src="src/img/logo.png" alt="Kisrada logo" class="header__logo" />
+
+        <form class="search" role="search" aria-label="Recipe search">
+            <label for="search-input" class="visually-hidden">Search recipes</label>
+            <input
+                    id="search-input"
+                    type="search"
+                    class="search__field"
+                    placeholder="Search over 1,000,000 recipes..."
+                    aria-label="Search recipes"
+            />
+            <button type="submit" class="btn search__btn" aria-label="Submit search">
+                <svg class="search__icon" aria-hidden="true">
+                    <use href="src/img/icons.svg#icon-search"></use>
+                </svg>
+                <span>Search</span>
+            </button>
+        </form>
+
+        <nav class="nav" aria-label="Main navigation">
+            <ul class="nav__list">
+                <li class="nav__item">
+                    <button
+                            type="button"
+                            class="nav__btn nav__btn--add-recipe"
+                            aria-label="Add new recipe"
+                    >
+                        <svg class="nav__icon" aria-hidden="true">
+                            <use href="src/img/icons.svg#icon-edit"></use>
+                        </svg>
+                        <span>Add recipe</span>
+                    </button>
+                </li>
+                <li class="nav__item">
+                    <button
+                            type="button"
+                            class="nav__btn nav__btn--bookmarks"
+                            aria-expanded="false"
+                            aria-controls="bookmarks-dropdown"
+                            aria-label="View bookmarks"
+                    >
+                        <svg class="nav__icon" aria-hidden="true">
+                            <use href="src/img/icons.svg#icon-bookmark"></use>
+                        </svg>
+                        <span>Bookmarks</span>
+                    </button>
+                    <div
+                            id="bookmarks-dropdown"
+                            class="bookmarks"
+                            role="region"
+                            aria-label="Bookmarked recipes"
+                    >
+                        <ul class="bookmarks__list">
+                            <li class="message">
+                                <div>
+                                    <svg aria-hidden="true">
+                                        <use href="src/img/icons.svg#icon-smile"></use>
+                                    </svg>
+                                </div>
+                                <p>No bookmarks yet. Find a nice recipe and bookmark it :)</p>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <aside class="search-results" aria-label="Search results">
+        <ul class="results" role="list" aria-live="polite" aria-label="Recipe results">
+            <!-- Results will be populated dynamically -->
+        </ul>
+
+        <nav class="pagination" aria-label="Pagination navigation">
+            <!-- Pagination buttons will be populated dynamically -->
+        </nav>
+
+        <footer class="copyright">
+            <small>
+                &copy; Copyright by
+                <a
+                        class="twitter-link"
+                        href="https://twitter.com/jonasschmedtman"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                >
+                    Jonas Schmedtmann
+                </a>
+                . Use for learning or your portfolio. Don't use to teach. Don't claim as your own.
+            </small>
+        </footer>
+    </aside>
+
+    <main class="recipe" aria-live="polite" aria-label="Recipe details">
+        <div class="message">
+            <div>
+                <svg aria-hidden="true">
+                    <use href="src/img/icons.svg#icon-smile"></use>
+                </svg>
+            </div>
+            <p>Start by searching for a recipe or an ingredient. Have fun!</p>
+        </div>
+    </main>
+</div>
+
+<div class="overlay hidden" aria-hidden="true"></div>
+
+<dialog class="add-recipe-window" aria-labelledby="modal-title">
+    <button
+            type="button"
+            class="btn--close-modal"
+            aria-label="Close modal"
+    >
+        &times;
+    </button>
+
+    <form class="upload" method="dialog">
+        <h2 id="modal-title" class="visually-hidden">Add New Recipe</h2>
+
+        <div class="upload__column">
+            <h3 class="upload__heading">Recipe data</h3>
+
+            <label for="title">Title</label>
+            <input
+                    id="title"
+                    name="title"
+                    type="text"
+                    required
+                    aria-required="true"
+            />
+
+            <label for="sourceUrl">URL</label>
+            <input
+                    id="sourceUrl"
+                    name="sourceUrl"
+                    type="url"
+                    required
+                    aria-required="true"
+            />
+
+            <label for="image">Image URL</label>
+            <input
+                    id="image"
+                    name="image"
+                    type="url"
+                    required
+                    aria-required="true"
+            />
+
+            <label for="publisher">Publisher</label>
+            <input
+                    id="publisher"
+                    name="publisher"
+                    type="text"
+                    required
+                    aria-required="true"
+            />
+
+            <label for="cookingTime">Prep time (minutes)</label>
+            <input
+                    id="cookingTime"
+                    name="cookingTime"
+                    type="number"
+                    min="1"
+                    required
+                    aria-required="true"
+            />
+
+            <label for="servings">Servings</label>
+            <input
+                    id="servings"
+                    name="servings"
+                    type="number"
+                    min="1"
+                    required
+                    aria-required="true"
+            />
+        </div>
+
+        <div class="upload__column">
+            <h3 class="upload__heading">Ingredients</h3>
+
+            <label for="ingredient-1">Ingredient 1</label>
+            <input
+                    id="ingredient-1"
+                    name="ingredient-1"
+                    type="text"
+                    required
+                    placeholder="Format: 'Quantity,Unit,Description'"
+                    aria-required="true"
+            />
+
+            <label for="ingredient-2">Ingredient 2</label>
+            <input
+                    id="ingredient-2"
+                    name="ingredient-2"
+                    type="text"
+                    placeholder="Format: 'Quantity,Unit,Description'"
+            />
+
+            <label for="ingredient-3">Ingredient 3</label>
+            <input
+                    id="ingredient-3"
+                    name="ingredient-3"
+                    type="text"
+                    placeholder="Format: 'Quantity,Unit,Description'"
+            />
+
+            <label for="ingredient-4">Ingredient 4</label>
+            <input
+                    id="ingredient-4"
+                    name="ingredient-4"
+                    type="text"
+                    placeholder="Format: 'Quantity,Unit,Description'"
+            />
+
+            <label for="ingredient-5">Ingredient 5</label>
+            <input
+                    id="ingredient-5"
+                    name="ingredient-5"
+                    type="text"
+                    placeholder="Format: 'Quantity,Unit,Description'"
+            />
+
+            <label for="ingredient-6">Ingredient 6</label>
+            <input
+                    id="ingredient-6"
+                    name="ingredient-6"
+                    type="text"
+                    placeholder="Format: 'Quantity,Unit,Description'"
+            />
+        </div>
+
+        <button type="submit" class="btn upload__btn">
+            <svg aria-hidden="true">
+                <use href="src/img/icons.svg#icon-upload-cloud"></use>
+            </svg>
+            <span>Upload</span>
+        </button>
+    </form>
+</dialog>
+</body>
+</html>
