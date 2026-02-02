@@ -1,3 +1,6 @@
+@use 'sass:color';
+@use 'base' as *;
+
 .header {
   grid-area: head;
   background-color: $color-grey-light-1;
@@ -5,10 +8,19 @@
   align-items: center;
   justify-content: space-between;
 
+  @media only screen and (max-width: $bp-small) {
+    padding: 0 2rem;
+  }
+
   &__logo {
     margin-left: 4rem;
     height: 4.6rem;
     display: block;
+
+    @media only screen and (max-width: $bp-small) {
+      margin-left: 0;
+      height: 3.5rem;
+    }
   }
 }
 
@@ -22,7 +34,11 @@
 
   &:focus-within {
     transform: translateY(-2px);
-    box-shadow: 0 0.7rem 3rem rgba($color-grey-dark-1, 0.08);
+    box-shadow: 0 0.7rem 3rem color.change($color-grey-dark-1, $alpha: 0.08);
+  }
+
+  @media only screen and (max-width: $bp-small) {
+    padding-left: 2rem;
   }
 
   &__field {
@@ -43,22 +59,28 @@
 
     @media only screen and (max-width: $bp-medium) {
       width: auto;
-
-      &::placeholder {
-        color: white;
-      }
+      font-size: 1.5rem;
     }
   }
 
   &__btn {
     font-weight: 600;
     font-family: inherit;
+
+    &:focus-visible {
+      outline: 2px solid $color-primary;
+      outline-offset: 2px;
+    }
   }
 }
 
 .nav {
   align-self: stretch;
   margin-right: 2.5rem;
+
+  @media only screen and (max-width: $bp-small) {
+    margin-right: 0;
+  }
 
   &__list {
     list-style: none;
@@ -86,16 +108,34 @@
     display: flex;
     align-items: center;
 
+    @media only screen and (max-width: $bp-small) {
+      padding: 0 1rem;
+      font-size: 1.2rem;
+
+      span {
+        display: none;
+      }
+    }
+
     svg {
       height: 2.4rem;
       width: 2.4rem;
       fill: $color-primary;
       margin-right: 0.7rem;
       transform: translateY(-1px);
+
+      @media only screen and (max-width: $bp-small) {
+        margin-right: 0;
+      }
     }
 
     &:focus {
       outline: none;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-primary;
+      outline-offset: -2px;
     }
 
     &:hover {
@@ -107,7 +147,6 @@
 .bookmarks {
   padding: 1rem 0;
   position: absolute;
-  // right: 0;
   right: -2.5rem;
   z-index: 10;
   width: 40rem;
@@ -117,6 +156,16 @@
   visibility: hidden;
   opacity: 0;
   transition: all 0.5s 0.2s;
+
+  @media only screen and (max-width: $bp-medium) {
+    right: 0;
+    width: 35rem;
+  }
+
+  @media only screen and (max-width: $bp-small) {
+    width: 90vw;
+    max-width: 35rem;
+  }
 
   &__list {
     list-style: none;
@@ -136,8 +185,10 @@
     }
   }
 
+  // Show bookmarks on hover or when button is focused
   &:hover,
-  .nav__btn--bookmarks:hover + & {
+  .nav__btn--bookmarks:hover + &,
+  .nav__btn--bookmarks:focus + & {
     visibility: visible;
     opacity: 1;
   }

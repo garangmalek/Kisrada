@@ -1,34 +1,34 @@
-// $color-primary: #f59a83;
-$color-primary: #f38e82;
-$color-grad-1: #fbdb89;
-$color-grad-2: #f48982;
+@use 'sass:color';
 
-$color-grey-light-1: #f9f5f3; // Light background
-$color-grey-light-2: #f2efee; // Light lines
-$color-grey-light-3: #d3c7c3; // Light text (placeholder)
-$color-grey-dark-1: #615551; // Normal text
-$color-grey-dark-2: #918581; // Lighter text
+// Color Variables - Fresh & Healthy Professional Palette
+$color-primary: #2d9f5d; // Fresh green - main accent
+$color-grad-1: #6bcf9f; // Light mint green
+$color-grad-2: #2d9f5d; // Deep forest green
+
+$color-grey-light-1: #f7faf8; // Very light mint background
+$color-grey-light-2: #e8f3ed; // Light green-tinted lines
+$color-grey-light-3: #b8c9c0; // Muted sage (placeholder)
+$color-grey-dark-1: #2c3e35; // Deep charcoal green (normal text)
+$color-grey-dark-2: #5a6d62; // Medium gray-green (lighter text)
 
 $gradient: linear-gradient(to right bottom, $color-grad-1, $color-grad-2);
 
+// Breakpoints
 $bp-large: 78.15em; // 1250px
 $bp-medium: 61.25em; // 980px
 $bp-small: 37.5em; // 600px
 $bp-smallest: 31.25em; // 500px
 
-* {
-  margin: 0;
-  padding: 0;
-}
-
+// Reset
 *,
 *::before,
 *::after {
-  box-sizing: inherit;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 html {
-  box-sizing: border-box;
   font-size: 62.5%;
 
   @media only screen and (max-width: $bp-medium) {
@@ -47,6 +47,20 @@ body {
   min-height: calc(100vh - 2 * 4vw);
 }
 
+// Accessibility helper
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// Container
 .container {
   max-width: 120rem;
   min-height: 117rem;
@@ -54,7 +68,7 @@ body {
   background-color: #fff;
   border-radius: 9px;
   overflow: hidden;
-  box-shadow: 0 2rem 6rem 0.5rem rgba($color-grey-dark-1, 0.2);
+  box-shadow: 0 2rem 6rem 0.5rem color.change($color-grey-dark-1, $alpha: 0.2);
 
   display: grid;
   grid-template-rows: 10rem minmax(100rem, auto);
@@ -67,5 +81,14 @@ body {
     max-width: 100%;
     margin: 0;
     border-radius: 0;
+  }
+
+  @media only screen and (max-width: $bp-medium) {
+    grid-template-columns: 1fr;
+    grid-template-rows: 10rem auto auto;
+    grid-template-areas:
+      'head'
+      'recipe'
+      'list';
   }
 }

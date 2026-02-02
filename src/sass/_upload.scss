@@ -1,16 +1,31 @@
+@use 'base' as *;
+
+// Updated to work with <dialog> semantic element
 .add-recipe-window {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   width: 100rem;
+  max-width: 90vw;
   background-color: white;
   border-radius: 9px;
-
+  border: none;
   padding: 5rem 6rem;
   box-shadow: 0 4rem 6rem rgba(0, 0, 0, 0.25);
   z-index: 1000;
   transition: all 0.5s;
+
+  // Dialog backdrop styling
+  &::backdrop {
+    background-color: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+  }
+
+  @media only screen and (max-width: $bp-small) {
+    padding: 3rem 2rem;
+    width: 95vw;
+  }
 
   .btn--close-modal {
     font-family: inherit;
@@ -22,9 +37,20 @@
     cursor: pointer;
     border: none;
     background: none;
+    transition: all 0.2s;
+
+    &:hover {
+      color: $color-primary;
+    }
+
+    &:focus {
+      outline: 2px solid $color-primary;
+      outline-offset: 2px;
+    }
   }
 }
 
+// Keep overlay for non-dialog fallback support
 .overlay {
   position: fixed;
   top: 0;
@@ -47,16 +73,29 @@
   grid-template-columns: 1fr 1fr;
   gap: 4rem 6rem;
 
+  @media only screen and (max-width: $bp-small) {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
   &__column {
     display: grid;
     grid-template-columns: 1fr 2.8fr;
     align-items: center;
     gap: 1.5rem;
 
+    @media only screen and (max-width: $bp-small) {
+      grid-template-columns: 1fr;
+    }
+
     & label {
       font-size: 1.5rem;
       font-weight: 600;
       color: inherit;
+
+      @media only screen and (max-width: $bp-small) {
+        margin-bottom: -1rem;
+      }
     }
 
     & input {
@@ -65,6 +104,7 @@
       border: 1px solid #ddd;
       border-radius: 0.5rem;
       transition: all 0.2s;
+      font-family: inherit;
 
       &::placeholder {
         color: $color-grey-light-3;
@@ -75,12 +115,22 @@
         border: 1px solid $color-primary;
         background-color: $color-grey-light-1;
       }
+
+      // Better styling for different input types
+      &[type='url'],
+      &[type='number'] {
+        font-family: inherit;
+      }
     }
 
     & button {
       grid-column: 1 / span 2;
       justify-self: center;
       margin-top: 1rem;
+
+      @media only screen and (max-width: $bp-small) {
+        grid-column: 1;
+      }
     }
   }
 
@@ -97,4 +147,3 @@
     justify-self: center;
   }
 }
-

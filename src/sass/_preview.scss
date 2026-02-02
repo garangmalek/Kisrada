@@ -1,3 +1,6 @@
+@use 'sass:color';
+@use 'base' as *;
+
 .preview {
   &__link {
     &:link,
@@ -13,6 +16,15 @@
     &:hover {
       background-color: $color-grey-light-1;
       transform: translateY(-2px);
+    }
+
+    &:focus {
+      outline: none;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-primary;
+      outline-offset: -2px;
     }
 
     &--active {
@@ -69,7 +81,7 @@
     text-transform: uppercase;
     font-weight: 600;
 
-    // This is how text is truncated!
+    // Text truncation
     text-overflow: ellipsis;
     max-width: 25rem;
     white-space: nowrap;
@@ -84,7 +96,7 @@
   }
 
   &__user-generated {
-    background-color: darken($color-grey-light-2, 2%);
+    background-color: color.adjust($color-grey-light-2, $lightness: -2%);
 
     display: flex;
     align-items: center;
