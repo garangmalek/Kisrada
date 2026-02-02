@@ -2,7 +2,7 @@
 
 A modern, responsive recipe search application that allows users to search, view, bookmark, and add their own recipes from a database of over 1,000,000 recipes.
 
-![Forkify App](https://img.shields.io/badge/status-active-success.svg)
+![Kisrada App](https://img.shields.io/badge/status-active-success.svg)
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white)
 ![SCSS](https://img.shields.io/badge/SCSS-CC6699?logo=sass&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black)
@@ -218,7 +218,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📧 Contact
 
-Your Name - [@OkGarang](https://twitter.com/OkGarang) - garangmalekgom@gmail.com
+Garang Malek - [@OkGarang](https://twitter.com/OkGarang) - garangmalekgom@gmail.com
 
 Project Link: [https://github.com/garangmalek/Kisrada](https://github.com/garangmalek/Kisrada)
 
