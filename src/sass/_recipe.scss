@@ -1,9 +1,4 @@
-@use 'sass:color';
-@use 'base' as *;
-
-// Updated to work with <main> semantic element
 .recipe {
-  grid-area: recipe;
   background-color: $color-grey-light-1;
 
   ///////////
@@ -11,6 +6,7 @@
   &__fig {
     height: 32rem;
     position: relative;
+    // transform: scale(1.04) translateY(-1px);
     transform-origin: top;
 
     &::before {
@@ -22,9 +18,9 @@
       top: 0;
       left: 0;
       background-image: linear-gradient(
-                      to right bottom,
-                      $color-grad-1,
-                      $color-grad-2
+              to right bottom,
+              $color-grad-1,
+              $color-grad-2
       );
       opacity: 0.6;
     }
@@ -55,9 +51,9 @@
       box-decoration-break: clone;
       padding: 1.3rem 2rem;
       background-image: linear-gradient(
-                      to right bottom,
-                      $color-grad-1,
-                      $color-grad-2
+              to right bottom,
+              $color-grad-1,
+              $color-grad-2
       );
     }
 
@@ -72,11 +68,6 @@
     display: flex;
     align-items: center;
     padding: 7.5rem 8rem 3.5rem 8rem;
-
-    @media only screen and (max-width: $bp-small) {
-      padding: 5rem 4rem 2.5rem 4rem;
-      flex-wrap: wrap;
-    }
   }
 
   &__info {
@@ -87,12 +78,6 @@
 
     &:not(:last-child) {
       margin-right: 4.5rem;
-    }
-
-    @media only screen and (max-width: $bp-small) {
-      &:not(:last-child) {
-        margin-right: 2rem;
-      }
     }
   }
 
@@ -115,7 +100,7 @@
   }
 
   &__user-generated {
-    background-color: color.adjust($color-grey-light-2, $lightness: -2%);
+    background-color: darken($color-grey-light-2, 2%);
 
     display: flex;
     align-items: center;
@@ -144,10 +129,6 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-
-    @media only screen and (max-width: $bp-small) {
-      padding: 4rem 3rem;
-    }
   }
 
   &__ingredient-list {
@@ -155,11 +136,6 @@
     grid-template-columns: 1fr 1fr;
     gap: 2.5rem 3rem;
     list-style: none;
-
-    @media only screen and (max-width: $bp-small) {
-      grid-template-columns: 1fr;
-      gap: 2rem;
-    }
   }
 
   &__ingredient {
@@ -184,13 +160,10 @@
   // DIRECTIONS
   &__directions {
     padding: 5rem 10rem;
+    padding-bottom: 5rem;
     display: flex;
     flex-direction: column;
     align-items: center;
-
-    @media only screen and (max-width: $bp-small) {
-      padding: 4rem 3rem;
-    }
   }
 
   &__directions-text {
