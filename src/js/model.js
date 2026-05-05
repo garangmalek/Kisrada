@@ -1,18 +1,28 @@
 import { API_URL, KEY, RES_PER_PAGE } from './config.js';
-// import { getJSON, sendJSON } from './helpers.js';
 import { AJAX } from './helpers.js';
 
+// ─── Central application state ────────────────────────────────────────────────
+// This single object is the "source of truth" for the whole app.
+// Views never write to this — only model functions do.
 export const state = {
   recipe: {},
   search: {
     query: '',
-    results: [],
-    page: 1,
+    results: [], // full result list from the API
+    page: 1, // current pagination page
     resultsPerPage: RES_PER_PAGE,
   },
   bookmarks: [],
 };
 
+// ─── Private helpers ──────────────────────────────────────────────────────────
+
+/**
+ * Normalizes the raw API recipe object into our app's naming convention
+ * (camelCase instead of snake_case) and extracts only what we need.
+ * Spreading `recipe.key` conditionally means user-uploaded recipes carry
+ * their key, but public ones stay clean.
+ */
 const createRecipeObject = function (data) {
   const { recipe } = data.data;
 
@@ -29,21 +39,38 @@ const createRecipeObject = function (data) {
   };
 };
 
+/** Writes the current bookmarks array to localStorage so they survive a refresh. */
+const persistedBookmarks = function () {
+  localStorage.setItem('bookmarks', JSON.stringify(state.bookmarks));
+};
+
+// ─── Recipe ───────────────────────────────────────────────────────────────────
+
+/**
+ * Fetches a single recipe by id and stores it in state.recipe.
+ * Also flags it as bookmarked if it already exists in state.bookmarks.
+ * Throws on network errors so the controller can surface them to the user.
+ */
 export const loadRecipe = async function (id) {
   try {
     const data = await AJAX(`${API_URL}${id}?key=${KEY}`);
     state.recipe = createRecipeObject(data);
 
+    // Sync bookmark flag without mutating the bookmarks array
     state.recipe.isBookmarked = state.bookmarks.some(
       bookmark => bookmark.id === id,
     );
   } catch (err) {
-    // Temp error handling
-    console.error(`${err} *****`);
     throw err;
   }
 };
 
+// ─── Search ───────────────────────────────────────────────────────────────────
+
+/**
+ * Searches the API and stores normalized results in state.search.results.
+ * Resets the page to 1 so pagination always starts fresh on a new search.
+ */
 export const loadSearchResults = async function (query) {
   try {
     state.search.query = query;
@@ -61,37 +88,45 @@ export const loadSearchResults = async function (query) {
     });
     state.search.page = 1;
   } catch (err) {
-    console.error(`${err} *****`);
     throw err;
   }
 };
 
+/**
+ * Returns the slice of results for the requested page and saves the page
+ * into state so other parts of the app know where we are.
+ * Defaults to the current page stored in state.
+ */
 export const getSearchResultsPage = function (page = state.search.page) {
   state.search.page = page;
 
-  const start = (page - 1) * state.search.resultsPerPage;
-  const end = page * state.search.resultsPerPage;
+  const start = (page - 1) * state.search.resultsPerPage; // e.g., page 1 → 0
+  const end = page * state.search.resultsPerPage; // e.g., page 1 → 10
 
   return state.search.results.slice(start, end);
 };
 
+// ─── Servings ─────────────────────────────────────────────────────────────────
+
+/**
+ * Scales every ingredient quantity proportionally when the serving count changes.
+ * Mutates state directly — the view will call update() rather than a full re-render.
+ */
 export const updateServings = function (newServings) {
   state.recipe.ingredients.forEach(ing => {
+    // ratio: new / old
     ing.quantity = (ing.quantity * newServings) / state.recipe.servings;
   });
 
   state.recipe.servings = newServings;
 };
 
-const persistedBookmarks = function () {
-  localStorage.setItem('bookmarks', JSON.stringify(state.bookmarks));
-};
+// ─── Bookmarks ────────────────────────────────────────────────────────────────
 
 export const addBookmark = function (recipe) {
-  // Add bookmark
   state.bookmarks.push(recipe);
 
-  // Mark current recipe as bookmarked
+  // Mark the currently-displayed recipe as bookmarked
   if (recipe.id === state.recipe.id) state.recipe.isBookmarked = true;
 
   persistedBookmarks();
@@ -108,33 +143,31 @@ export const removeBookmark = function (id) {
   persistedBookmarks();
 };
 
-const initBookmarks = function () {
-  const storage = localStorage.getItem('bookmarks');
-  if (storage) state.bookmarks = JSON.parse(storage);
-};
+// ─── Add Recipe ───────────────────────────────────────────────────────────────
 
-initBookmarks();
-
-const clearBookmarks = function () {
-  localStorage.clear();
-};
-// clearBookmarks();
-
+/**
+ * Transforms the raw form data object, validates ingredient format,
+ * POSTs to the API, then saves the new recipe as a bookmark automatically.
+ */
 export const uploadRecipe = async function (newRecipe) {
   try {
+    // Pull only the ingredient-* fields that have a value
     const ingredients = Object.entries(newRecipe)
       .filter(entry => entry[0].startsWith('ingredient') && entry[1] !== '')
       .map(ing => {
         const ingArr = ing[1].split(',').map(el => el.trim());
-        // const ingArr = ing[1].replaceAll(' ', '').split(',');
+
         if (ingArr.length !== 3)
           throw new Error(
-            'Please enter ingredients in the format: quantity, unit, description',
+            'Wrong ingredient format!: Quantity, Unit, Description',
           );
 
         const [quantity, unit, description] = ingArr;
-
-        return { quantity: quantity ? +quantity : null, unit, description };
+        return {
+          quantity: quantity ? +quantity : null, // coerce to number or null
+          unit,
+          description,
+        };
       });
 
     const recipe = {
@@ -149,8 +182,25 @@ export const uploadRecipe = async function (newRecipe) {
 
     const data = await AJAX(`${API_URL}?key=${KEY}`, recipe);
     state.recipe = createRecipeObject(data);
+
+    // Auto-bookmark the user's own recipe
     addBookmark(state.recipe);
   } catch (err) {
     throw err;
   }
 };
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+// Runs once when the module is first imported.
+// Restores bookmarks from localStorage so they survive page refreshes.
+const initBookmarks = function () {
+  const storage = localStorage.getItem('bookmarks');
+  if (storage) state.bookmarks = JSON.parse(storage);
+};
+
+initBookmarks();
+
+const clearBookmarks = function () {
+  localStorage.clear();
+};
+// clearBookmarks();

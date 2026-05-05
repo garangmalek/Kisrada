@@ -1,5 +1,20 @@
+/**
+ * controller.js — the "traffic controller" of the MVC architecture.
+ *
+ * Rules enforced here:
+ *  • Controller imports from BOTH model and views.
+ *  • Model imports from NO views.
+ *  • Views import from NO model (and from each other only for composition).
+ *
+ * Each `control*` function follows the same pattern:
+ *   1. Show a spinner so the user knows something is happening.
+ *   2. Call the model (async, wrapped in try/catch).
+ *   3. Tell the relevant view(s) to render the new state.
+ */
+
 import * as model from './model.js';
-import {MODAL_CLOSE_SEC} from './config.js';
+import { MODAL_CLOSE_SEC } from './config.js';
+
 import recipeView from './views/recipeView.js';
 import searchView from './views/searchView.js';
 import resultsView from './views/resultsView.js';
@@ -10,27 +25,44 @@ import addRecipeView from './views/addRecipeView.js';
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 
+// ─── Recipe ───────────────────────────────────────────────────────────────────
+
+/**
+ * Triggered by: hashchange event OR page load with a hash already in the URL.
+ *
+ * Also calls update() (not render()) on resultsView and bookmarksView so the
+ * active-link highlight moves without re-rendering the entire list.
+ * @returns {Promise<void>}
+ */
 const controlRecipes = async function () {
   try {
     const id = window.location.hash.slice(1);
+    if (!id) return; // nothing to load if there's no hash
 
-    if (!id) return;
     recipeView.renderSpinner();
 
-    // 0). Update the results view to mark the selected search result
+    // Keep the sidebar in sync: highlight the selected result card
     resultsView.update(model.getSearchResultsPage());
     bookmarksView.update(model.state.bookmarks);
 
-    // 1). Loading recipe
+    // Fetch and store the recipe in state
     await model.loadRecipe(id);
 
-    // 2). Rendering recipe
+    // Hand state.recipe to the view — view knows nothing about the model
     recipeView.render(model.state.recipe);
   } catch (err) {
     recipeView.renderError();
+    console.log(err);
   }
 };
 
+
+// ─── Search ───────────────────────────────────────────────────────────────────
+
+/**
+ * Triggered by: search form submit.
+ * @returns {Promise<void>}
+ */
 const controlSearchResults = async function () {
   try {
     resultsView.renderSpinner();
@@ -42,73 +74,96 @@ const controlSearchResults = async function () {
     // 2) Load search results
     await model.loadSearchResults(query);
 
-    // 3) Render results
+    // 3) Render only page 1 — getSearchResultsPage() slices the full results array
     resultsView.render(model.getSearchResultsPage());
 
-    // 4) Render initial pagination buttons
+    // 4) Render pagination buttons based on total result count
     paginationView.render(model.state.search);
   } catch (err) {
     console.log(err);
+    resultsView.renderError(); // replaces the spinner with the error message
   }
 };
 
-const controlPagination = function (goToPage) {
-  // 1) Render NEW results
-  resultsView.render(model.getSearchResultsPage(goToPage));
+// ─── Pagination ───────────────────────────────────────────────────────────────
 
-  // 4) Render NEW pagination buttons
+/**
+ * Triggered by: click on a pagination button.
+ * @param {number} goToPage The page number stored in the button's data-goto attribute.
+ */
+const controlPagination = function (goToPage) {
+  resultsView.render(model.getSearchResultsPage(goToPage));
   paginationView.render(model.state.search);
 };
 
-const controlServings = function (newServings) {
-  // Update the recipe servings (in state)
-  model.updateServings(newServings);
+// ─── Servings ─────────────────────────────────────────────────────────────────
 
-  // Update the recipe view
-  recipeView.update(model.state.recipe);
+/**
+ * Triggered by: click on +/- buttons inside the recipe view
+ * Uses update() instead of render() to avoid a full DOM replacement —
+ * only the quantities and the button data attributes change.
+ *
+ * @param {number} newServings value from the clicked button's data-update-to.
+ */
+const controlServings = function (newServings) {
+  model.updateServings(newServings); // mutates state.recipe in place
+  recipeView.update(model.state.recipe); // surgical DOM diff
 };
 
+// ─── Bookmarks ────────────────────────────────────────────────────────────────
+
+/**
+ * Triggered by: click on the bookmark button inside the recipe view.
+ * Toggles the bookmark state and re-renders the affected areas.
+ */
 const controlAddBookmark = function () {
-  // 1) Add/remove bookmark
   if (model.state.recipe.isBookmarked) {
     model.removeBookmark(model.state.recipe.id);
   } else {
     model.addBookmark(model.state.recipe);
   }
 
-  // 2) Update recipe view
+  // Update — only the bookmark icon SVG href needs to change
   recipeView.update(model.state.recipe);
 
-  // 3) Render bookmarks
+  // Full re-render of the bookmarks dropdown list
   bookmarksView.render(model.state.bookmarks);
 };
 
+/**
+ * Triggered by: page 'load' event (wired up via bookmarksView.addHandlerRender).
+ * Restores bookmarks from localStorage into the dropdown on first load.
+ */
 const controlBookmarks = function () {
   bookmarksView.render(model.state.bookmarks);
 };
 
+// ─── Add Recipe ───────────────────────────────────────────────────────────────
+
+/**
+ * Triggered by: "Upload" button inside the add-recipe modal form.
+ * @param {Object} newRecipe Plain object built from FormData in addRecipeView.
+ * @returns {Promise<void>}
+ */
 const controlAddRecipe = async function (newRecipe) {
   try {
-    // Show loading spinner
     addRecipeView.renderSpinner();
 
-    // Upload the new recipe data
     await model.uploadRecipe(newRecipe);
-    console.log(model.state.recipe);
 
-    // Render recipe
+    // Show the newly uploaded recipe in the main panel
     recipeView.render(model.state.recipe);
 
-    // Success message
+    // Confirmation message inside the modal
     addRecipeView.renderMessage();
 
-    // Render bookmark view
+    // Reflect the auto-bookmark in the dropdown
     bookmarksView.render(model.state.bookmarks);
 
-    // Change ID in URL
+    // Sync the URL hash without triggering a hashchange re-fetch
     window.history.pushState(null, '', `#${model.state.recipe.id}`);
 
-    // Clear the form
+    // Close the modal after a short delay so the user can read the message
     setTimeout(function () {
       addRecipeView.toggleWindow();
     }, MODAL_CLOSE_SEC * 1000);
@@ -118,6 +173,14 @@ const controlAddRecipe = async function (newRecipe) {
   }
 };
 
+// ─── Init ─────────────────────────────────────────────────────────────────────
+
+/**
+ * Wire up all event handlers in one place.
+ * Views expose "addHandler*" methods so the controller can subscribe
+ * without knowing anything about how the DOM events are structured.
+ * This keeps the "Publisher-Subscriber" pattern clean.
+ */
 const init = function () {
   bookmarksView.addHandlerUpdate(controlBookmarks);
   recipeView.addHandlerRender(controlRecipes);

@@ -1,24 +1,41 @@
 import View from './View.js';
-
 import icons from 'url:../../img/icons.svg';
+import Fraction from 'fraction.js';
+
+// fractional converts decimal quantities (e.g., 0.5) → readable fractions ("1/2")
+// Install with: npm install fractional
 
 class RecipeView extends View {
   _parentElement = document.querySelector('.recipe');
-  _errorMessage = 'We could not find that recipe. Please try another one!';
+  _errorMessage = 'No recipe found. Please try another one!';
   _message = '';
 
+  // ─── Publisher ────────────────────────────────────────────────────────────
+
+  /**
+   * Listens for both 'hashchange' (user clicks a result link) and
+   * 'load' (page first opens with a hash already in the URL).
+   * @param handler
+   */
   addHandlerRender(handler) {
     ['hashchange', 'load'].forEach(event =>
       window.addEventListener(event, handler),
     );
   }
 
+  /**
+   * Uses event delegation on the whole recipe section.
+   * Only the buttons with class .btn--update-servings carry a data-update-to attribute,
+   * so we can safely ignore all other clicks.
+   * @param handler
+   */
   addHandlerUpdateServings(handler) {
     this._parentElement.addEventListener('click', function (e) {
       const btn = e.target.closest('.btn--update-servings');
       if (!btn) return;
-      const { updateTo } = btn.dataset;
 
+      const { updateTo } = btn.dataset;
+      // Guard against going below 1 serving
       if (+updateTo > 0) handler(+updateTo);
     });
   }
@@ -30,6 +47,8 @@ class RecipeView extends View {
       handler();
     });
   }
+
+  // ─── Markup ───────────────────────────────────────────────────────────────
 
   _generateMarkup() {
     return `
@@ -48,6 +67,7 @@ class RecipeView extends View {
           <span class="recipe__info-data recipe__info-data--minutes">${this._data.cookingTime}</span>
           <span class="recipe__info-text">minutes</span>
         </div>
+        
         <div class="recipe__info">
           <svg class="recipe__info-icon">
             <use href="${icons}#icon-users"></use>
@@ -56,6 +76,7 @@ class RecipeView extends View {
           <span class="recipe__info-text">servings</span>
 
           <div class="recipe__info-buttons">
+          <!-- data-update-to drives the controlServings handler -->
             <button class="btn--tiny btn--update-servings" data-update-to="${this._data.servings - 1}">
               <svg>
                 <use href="${icons}#icon-minus-circle"></use>
@@ -69,11 +90,14 @@ class RecipeView extends View {
           </div>
         </div>
 
+        <!-- Only show the "user" badge for recipes uploaded via the API key -->
         <div class="recipe__user-generated ${this._data.key ? '' : 'hidden'}">
           <svg>
             <use href="${icons}#icon-user"></use>
           </svg>
         </div>
+        
+        <!-- Bookmark icon fills when already bookmarked -->
         <button class="btn--round btn-bookmark">
           <svg class="">
             <use href="${icons}#icon-bookmark${this._data.isBookmarked ? '-fill' : ''}"></use>
@@ -109,13 +133,21 @@ class RecipeView extends View {
     `;
   }
 
+  /**
+   * Generates markup for a single ingredient list item.
+   * Defined as a separate method (not an arrow function on the class) so it
+   * can be passed directly to .map() without losing `this` binding issues.
+   * @param ing
+   * @returns {string}
+   * @private
+   */
   _generateMarkupIngredient(ing) {
     return `
       <li class="recipe__ingredient">
         <svg class="recipe__icon">
           <use href="${icons}#icon-check"></use>
         </svg>
-        <div class="recipe__quantity">${ing.quantity}</div>
+        <div class="recipe__quantity">${ing.quantity ? new Fraction(ing.quantity).toFraction(true) : ''}</div>
         <div class="recipe__description">
           <span class="recipe__unit">${ing.unit}</span>
           ${ing.description}
@@ -125,4 +157,5 @@ class RecipeView extends View {
   }
 }
 
+// Export a single instance - every import gets the same object (Singleton)
 export default new RecipeView();
